@@ -736,31 +736,35 @@
     const alco = data.getAll('alco').join(', ') || '—';
     const nonalco = data.getAll('nonalco').join(', ') || '—';
 
-    // Payload for FormSubmit (https://formsubmit.co) — sends the RSVP to email automatically
+    // Payload for Web3Forms (https://web3forms.com) — sends the RSVP to email automatically
     const payload = {
+      access_key: "796a1fda-0f8a-4b19-bafb-5ed3070bcc90",
+      subject: `Анкета гостя — ${name}`,
+      from_name: "Запрошення на весілля",
       "Ім'я та прізвище": name,
       "Чи буде на весіллі": attend,
       "Ночівля в котеджі": stay,
       "Алергії / харчові обмеження": allergies,
       "Побажання по алкоголю": alco,
-      "Побажання по безалкогольних напоях": nonalco,
-      _subject: `Анкета гостя — ${name}`,
-      _template: "table",
-      _captcha: "false"
+      "Побажання по безалкогольних напоях": nonalco
     };
 
     const btn = form.querySelector('button[type="submit"]');
     if (btn){ btn.disabled = true; btn.textContent = 'Надсилаємо…'; }
 
-    fetch(`https://formsubmit.co/ajax/${RSVP_EMAIL}`, {
+    fetch('https://api.web3forms.com/submit', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
       body: JSON.stringify(payload)
     })
     .then(r => r.json())
-    .then(() => {
-      form.style.display = 'none';
-      document.getElementById('thankYou').style.display = 'block';
+    .then(res => {
+      if (res && res.success){
+        form.style.display = 'none';
+        document.getElementById('thankYou').style.display = 'block';
+      } else {
+        throw new Error(res && res.message ? res.message : 'error');
+      }
     })
     .catch(() => {
       // No email login is ever required from the guest — just ask to retry.
