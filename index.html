@@ -718,6 +718,23 @@
     }
   });
 
+  // ---------- AUTOPLAY MUSIC ----------
+  // Browsers block audio autoplay until the user interacts with the page,
+  // so we try immediately and, if blocked, start on the first tap/click/keypress.
+  function tryPlayBgm(){
+    return bgm.play().then(() => { audioBtn.classList.remove('muted'); });
+  }
+  tryPlayBgm().catch(() => {});
+
+  function startOnFirstInteraction(e){
+    if (audioBtn.contains(e.target)) return; // let the button handle its own clicks
+    tryPlayBgm().catch(() => {});
+    ['pointerdown','keydown','touchstart'].forEach(ev =>
+      window.removeEventListener(ev, startOnFirstInteraction));
+  }
+  ['pointerdown','keydown','touchstart'].forEach(ev =>
+    window.addEventListener(ev, startOnFirstInteraction, { passive: true }));
+
   // ---------- RSVP FORM ----------
   document.getElementById('rsvpForm').addEventListener('submit', function(e){
     e.preventDefault();
